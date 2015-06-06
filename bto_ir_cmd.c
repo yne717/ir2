@@ -426,37 +426,42 @@ int create_ir_code_simple(char *ir_data, char *buff, int buff_size) {
 
 int create_ir_code(unsigned int code_no, char *buff, int buff_size) {
   int code_size = 0;
+
   unsigned char code[9][4] = {
-    { 0xD1, 0x2D, 0x08, 0xF7 },
-    { 0xD1, 0x2D, 0x00, 0x00 },
-    { 0xD1, 0x2D, 0x00, 0x00 },
-    { 0xD1, 0x2D, 0x00, 0x00 },
-    { 0xD1, 0x2D, 0x00, 0x00 },
-    { 0xD1, 0x2D, 0x3C, 0xC3 },
-    { 0xD1, 0x2D, 0x00, 0x00 },
-    { 0xD1, 0x2D, 0x00, 0x00 },
-    { 0xD1, 0x2D, 0x09, 0xF6 }
+    { 0x81, 0x16, 0x00, 0x00},
+    { 0x81, 0x16, 0x00, 0x00},
+    { 0x81, 0x16, 0x00, 0x00},
+    { 0x81, 0x16, 0x00, 0x00},
+    { 0x81, 0x16, 0x00, 0x00},
+    { 0x81, 0x16, 0x00, 0x00},
+    { 0x81, 0x16, 0x2B, 0xD4},
+    { 0x81, 0x16, 0x00, 0xFF},
+    { 0x81, 0x16, 0x1F, 0xE0}
   };
 
   int c_need_data_len = 1224;
   unsigned char c_reader_code[] = { 0x01, 0x56, 0x00, 0xAB};
   unsigned char c_off_code[]    = { 0x00, 0x15, 0x00, 0x15};
   unsigned char c_on_code[]     = { 0x00, 0x15, 0x00, 0x40};
-  unsigned char c_end_code[]    = { 0x00, 0x15, 0x08, 0xFD};
+  unsigned char c_end_code[]    = { 0x00, 0x15, 0x0E, 0xE8};
+  
+  unsigned char c_num_data[]    = { 0x00, 0x07, 0x0A, 0x58, 0x03, 0x06, 0x50, 0x01, 0x0E, 0x5D};
+
+
   int buff_set_pos = 0;
 
-  code[1][2] = (unsigned char)(((code_no % 1000000) / 100000) + 0x30);
+  code[0][2] = (unsigned char)c_num_data[((code_no % 1000000) / 100000)];
+  code[0][3] = (unsigned char)(~code[0][2] & 0xFF);
+  code[1][2] = (unsigned char)c_num_data[((code_no % 100000)  /  10000)];
   code[1][3] = (unsigned char)(~code[1][2] & 0xFF);
-  code[2][2] = (unsigned char)(((code_no % 100000)  /  10000) + 0x30);
+  code[2][2] = (unsigned char)c_num_data[((code_no % 10000)   /   1000)];
   code[2][3] = (unsigned char)(~code[2][2] & 0xFF);
-  code[3][2] = (unsigned char)(((code_no % 10000)   /   1000) + 0x30);
+  code[3][2] = (unsigned char)c_num_data[((code_no % 1000)    /    100)];
   code[3][3] = (unsigned char)(~code[3][2] & 0xFF);
-  code[4][2] = (unsigned char)(((code_no % 1000)    /    100) + 0x30);
+  code[4][2] = (unsigned char)c_num_data[((code_no % 100)     /     10)];
   code[4][3] = (unsigned char)(~code[4][2] & 0xFF);
-  code[6][2] = (unsigned char)(((code_no % 100)     /     10) + 0x30);
-  code[6][3] = (unsigned char)(~code[6][2] & 0xFF);
-  code[7][2] = (unsigned char)((code_no % 10)                 + 0x30);
-  code[7][3] = (unsigned char)(~code[7][2] & 0xFF);
+  code[5][2] = (unsigned char)c_num_data[(code_no % 10)                ];
+  code[5][3] = (unsigned char)(~code[5][2] & 0xFF);
 
   if (c_need_data_len <= buff_size) {
     int set_pos = 0;
